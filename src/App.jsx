@@ -1,4 +1,4 @@
-import { Button, Card, Form, Input, message } from 'antd'
+import { Button, Card, Form, Input, message, Popconfirm } from 'antd'
 import { useForm } from 'antd/es/form/Form'
 import { Save } from 'lucide-react'
 import React, { useState } from 'react'
@@ -9,18 +9,25 @@ import 'animate.css';
 
 function App() {
   const [form] = useForm()
-  const {files, setFile, updateFile} = useFile()
+  const {files, setFile, updateFile, deleteFile} = useFile()
   const [editable,setEditable] = useState(null)
 
    const createFile = (value)=>{
-
+    
+   const ifExist =  files.some((file)=>file.filename === value.filename)
+   if(ifExist)
+   {
+    message.error("Filename already exist")
+    return
+   }
     value.date = moment().format("DD MMM YYYY, hh:mm A")
     value.id = nanoid()
 
     setFile(value)
-    message.success("files saved succesfully")
-    form.resetFields();
+    // message.success("files saved succesfully")
+    // form.resetFields();
     // console.log(value)
+    onSuccess()
 
   }
 
@@ -30,10 +37,23 @@ function App() {
   }
 
   const updateChanges = (value) =>{
+    
      value.date = moment().format("DD MMM YYYY, hh:mm A")
 
      updateFile(editable.id,value)
-    console.log(editable.id)
+    // console.log(editable.id)
+    onSuccess()
+  }
+
+  const onSuccess = ()=>{
+    form.resetFields();
+    setEditable(null)
+    message.success("files saved succesfully")
+  }
+
+  const removeFile = (id) =>{
+   deleteFile(id)
+   message.success("File Deleted !")
   }
 
   return (
@@ -47,6 +67,11 @@ function App() {
            title={file.filename}
            description={file.date}
            />
+           <Popconfirm title="Are you sure to Delete file?" onConfirm={(e)=>{
+            e.stopPropagation()
+            removeFile(file.id)}}>
+           <Button type='primary' danger size='small' className='mt-4' onClick={(e)=>e.stopPropagation()}>Delete</Button>
+           </Popconfirm>
            </Card>
           ))
         }
